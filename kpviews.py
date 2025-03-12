@@ -35,7 +35,7 @@ class KPNetGenerator(RenderO3D):
     def __init__(self, log_dir: str | os.PathLike = Path(), expname=f'{type(Multimodal).__name__}PTS'):
         self.log_dir = Path(log_dir)
         self.gpt = GPT4o()
-        self.molmo = self.Multimodal()
+        self.molmo = None
         self.io = KPNetIO(self.log_dir / expname)
         self.dist = 1
         self.res = 512
@@ -58,6 +58,9 @@ class KPNetGenerator(RenderO3D):
 
     @torch.inference_mode()
     def detect_kps(self, tensor_images, kp):
+        if self.molmo is None:
+            self.molmo = self.Multimodal()
+
         all_kps = {}
         all_vis = []
         pbar = trange(tensor_images.size(0), desc=kp)

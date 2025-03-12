@@ -15,6 +15,10 @@ from sklearn.utils import gen_batches
 from data_creation.keypointnet.utils.render_utils import Render
 from kp_utils import setup_renderer
 
+from pytorch3d.structures import Meshes
+from pytorch3d.renderer import MeshRenderer, MeshRasterizer, FoVPerspectiveCameras, look_at_view_transform, PointLights, TexturesVertex
+from pytorch3d.utils import ico_sphere
+
 
 class RenderO3D(Render):
     def __init__(self, *args, res=512, **kwargs):
@@ -39,7 +43,7 @@ class RenderO3D(Render):
 
 
 @torch.inference_mode()
-def views_from_model(renderer, mesh, views, batch_size=None, device="cuda"):
+def views_from_model(renderer, mesh, views, sphere_location=None,sphere_radius=0.05,batch_size=None, device="cuda"):
     """
     Compute the features extracted by 'model' from rendered images rendered with 'renderer (deprecated)' for the keypoints
 
@@ -60,12 +64,34 @@ def views_from_model(renderer, mesh, views, batch_size=None, device="cuda"):
     if batch_size is None:
         batch_size = num_views
 
+    if sphere_location is not None:
+        # Create a red sphere at the specified location
+        sphere_mesh = ico_sphere(4, device=device)  # Using a high-resolution icosphere
+        sphere_mesh = sphere_mesh.scale_verts(sphere_radius)  # Scale to the desired radius
+        sphere_mesh = sphere_mesh.offset_verts(sphere_location.to(device))  # Move it to the desired location
+
+        # Create red color for the sphere vertices
+        red_color = torch.tensor([[1.0, 0.0, 0.0]], device=device).expand(sphere_mesh.verts_packed().shape[0], -1)
+        sphere_mesh.textures = TexturesVertex(verts_features=red_color[None])
+
+        # Combine the main mesh and the sphere mesh
+        mesh = Meshes(
+            verts=[torch.cat([mesh.verts_packed(), sphere_mesh.verts_packed()])],
+            faces=[torch.cat([mesh.faces_packed(), sphere_mesh.faces_packed() + mesh.verts_packed().shape[0]])],
+            textures=TexturesVertex(verts_features=torch.cat([mesh.textures.verts_features_packed(), red_color])[None])
+        )
+
     all_images = []
     all_fragments = defaultdict(list)
 
     with torch.no_grad():
         R, T = look_at_view_transform(eye=views, at=target, device=device)
-
+        rotate = torch.tensor([
+            [1, 0, 0],
+            [0, 0, -1],
+            [0, 1, 0]
+        ]).float().to(R.device)
+        R = rotate @ R
         # 1. Render the mesh
         for s in gen_batches(num_views, batch_size):
             cameras = FoVPerspectiveCameras(R=R[s], T=T[s], device=device)

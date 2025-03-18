@@ -19,8 +19,8 @@ We propose a novel zero-shot approach for keypoint detection on 3D shapes. Point
 **Installation:**
 
 ```bash
-conda create -n bt3d python=3.12
-conda activate bt3d
+conda create -n zerokey python=3.12
+conda activate zerokey
 conda install pytorch torchvision pytorch-cuda xformers -c pytorch -c nvidia -c xformers
 conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 conda install pytorch3d -c pytorch3d

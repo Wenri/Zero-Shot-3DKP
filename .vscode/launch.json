@@ -59,6 +59,30 @@
             "request": "launch",
             "program": "line_plot.py",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug Molmo",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "data_creation/molmo.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "1",
+                "DEBUG": "1"
+            }
+        },
+        {
+            "name": "Debug Pixmo Points",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "data_creation/pixmo-points.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "1",
+                "DEBUG": "1"
+            }
         }
     ]
 }

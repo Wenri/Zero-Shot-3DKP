@@ -102,7 +102,7 @@ def get_evaluation(name, seq_len, batch_size, max_examples, num_workers=2) -> Da
     evaluator.n_to_log = 0
     evaluator.save_predictions = None
     test_eval_tasks = ["mme_test", "real_world_qa_test", "real_world_qa_test", "count_bench",
-                       "seed_bench_test", "sugar_crepe_test", "count_bench_from_caption", "pointing_test"]
+                       "seed_bench_test", "sugar_crepe_test", "count_bench_from_caption", "pointing_eval", "pointing_test"]
     if split is None:
         split = "test" if task_name in test_eval_tasks else "validation"
 

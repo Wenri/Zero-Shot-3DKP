@@ -2400,7 +2400,14 @@ class Molmo(nn.Module):
             state_dict = torch.load(state_dict_path, map_location="cpu")
             dtype = state_dict[list(state_dict.keys())[0]].dtype
             log.info(f"Checkpoint weight dtype: {dtype}")
-            model.load_state_dict(model._make_state_dict_compatible(state_dict)[0])
+            state_dict, _ = model._make_state_dict_compatible(state_dict)
+            missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+            assert not unexpected_keys
+            if missing_keys:
+                state_dict_missing = torch.load('/data/bingchen/molmo/checkpoints/Molmo-7B-O-0924-Pretrained/model.pt', map_location="cpu")
+                state_dict_missing, _ = model._make_state_dict_compatible(state_dict_missing)
+                state_dict.update({k: state_dict_missing[k] for k in missing_keys})
+                model.load_state_dict(state_dict, strict=True)
             model = model.to(torch.device(device))
         else:
             from .checkpoint import load_model_state

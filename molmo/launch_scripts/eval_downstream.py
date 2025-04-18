@@ -178,6 +178,7 @@ def main():
             wrapping_strategy=FSDPWrapStrategy.by_block_and_size,
             precision=FSDPPrecision.float,
         ) if args.fsdp else None,
+        precision="amp_bf16",
     )
 
     if other_args:

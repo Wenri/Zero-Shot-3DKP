@@ -141,6 +141,36 @@ if __name__ == "__main__":
                 "pixmo_count_counting",
             ], 0.35]
         ]
+    elif args.mixture == "pointing":
+        eval_tasks = [
+            "chart_qa",
+            "info_qa",
+            "doc_qa",
+            "coco_2014_vqa_multi",
+            # "clocks",
+            "pointing_eval:test",
+            "countbench_qa:huggingface"
+        ]
+        tasks = [
+            ["demo", [
+                "pixmo_ask_model_anything",
+                ("pixmo_cap", 50000),
+                "pixmo_cap_qa",
+                "pixmo_pointing_explanations"
+            ], 0.15],
+            ["aux", [
+                ("chart_qa", 4*4),
+                ("doc_qa", 2*2), 
+                ("info_qa", 1)], 0.35],
+            ["pointing", [
+                "pixmo_points",
+                "pixmo_count",
+                "pixmo_points_high_freq",
+                "pixmo_points_counting",
+                "pixmo_points_high_freq_counting",
+                "pixmo_count_counting",
+            ], 0.50]
+        ]
     else:
         raise NotImplementedError(args.mixture)
 

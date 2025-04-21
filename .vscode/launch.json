@@ -132,6 +132,32 @@
                 "DEBUG": "1",
                 "PYTHONPATH": "${workspaceFolder}/molmo"
             }
+        },
+        {
+            "name": "Run Multitask Training",
+            "type": "debugpy", 
+            "request": "launch",
+            "module": "torch.distributed.run",
+            "args": [
+                "--nproc_per_node=2",
+                "--nnodes=1",
+                "launch_scripts/train_multitask_model.py",
+                "pointing",
+                "/data/bingchen/molmo/checkpoints/Molmo-7B-D-0924-Point",
+                "--wandb=null",
+                "--save_folder=/data/bingchen/molmo/checkpoints/Molmo-7B-D-0924-Save",
+                "--save_overwrite"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}/molmo",
+            "env": {
+                "HF_HOME": "/data/bingchen/molmo/huggingface", 
+                "MOLMO_DATA_DIR": "/data/bingchen/molmo",
+                "DEBUG": "1",
+                "PYTHONPATH": "${workspaceFolder}/molmo",
+                "PYTORCH_CUDA_ALLOC_CONF": ""
+            }
         }
     ]
 }

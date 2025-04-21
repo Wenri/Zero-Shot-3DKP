@@ -131,7 +131,7 @@ def get_evaluation(name, seq_len, batch_size, max_examples, num_workers=2) -> Da
         dataset=task_name, sequence_length=seq_len,
         for_inference=True,
         split=split, shuffle=True, drop_last=True,
-        num_workers=num_workers, pad="to_max", pin_memory=True
+        num_workers=num_workers, pad="to_max", pin_memory=False
     )
 
     return DatasetEvaluatorConfig(

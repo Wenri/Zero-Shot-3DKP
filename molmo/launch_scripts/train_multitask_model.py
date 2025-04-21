@@ -263,7 +263,7 @@ if __name__ == "__main__":
             num_workers=2,
             pad="to_max",
             shuffle_messages=True,
-            pin_memory=True,
+            pin_memory=False,
             seed=50189
         ),
         ft_connector=True,

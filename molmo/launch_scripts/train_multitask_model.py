@@ -160,7 +160,7 @@ if __name__ == "__main__":
             ], 0.15],
             ["aux", [
                 ("chart_qa", 4*4),
-                ("doc_qa", 2*2), 
+                ("doc_qa", 2*2),
                 ("info_qa", 1)], 0.35],
             ["pointing", [
                 "pixmo_points",

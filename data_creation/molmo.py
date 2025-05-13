@@ -34,7 +34,7 @@ class Molmo:
         )
         self.block_handles = OrderedDict()
         self.emb_handles = OrderedDict()
-        self.register_hooks()
+        # self.register_hooks()
 
     def register_hooks(self):
         for block in self.model.model.transformer.blocks:
@@ -209,7 +209,7 @@ class Molmo:
                 tokenizer=self.processor.tokenizer
             )
 
-        last_attn_weight = self.collect_attn_weights(output)
+        # last_attn_weight = self.collect_attn_weights(output)
 
         # only get generated tokens; decode them to text
         generated_tokens = output.sequences[0, inputs['input_ids'].size(1):]
@@ -218,7 +218,11 @@ class Molmo:
 
         generated_text = self.processor.tokenizer.decode(generated_tokens, skip_special_tokens=True)
 
-        topk = [torch.topk(a, k=12, largest=True, sorted=True) for a in output.scores]
+        # print the generated text
+        return generated_text
+    
+    def plot_output_topk(self, inputs, output_scores, k=12):
+        topk = [torch.topk(a, k=k, largest=True, sorted=True) for a in output_scores]
         topk_tokens = torch.cat([a.indices for a in topk], dim=0)
         topk_scores = torch.cat([a.values for a in topk], dim=0)
         topk_scores.sigmoid_()
@@ -250,8 +254,6 @@ class Molmo:
         # Save the combined image
         alpha_composite.save('plot.png')
 
-        # print the generated text
-        return generated_text
         # >>> This image features an adorable black Labrador puppy sitting on a wooden deck.
         #     The puppy is positioned in the center of the frame, looking up at the camera...
 

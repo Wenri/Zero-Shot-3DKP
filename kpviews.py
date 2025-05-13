@@ -263,4 +263,4 @@ class KPNetGenerator(RenderO3D):
 
 if __name__ == '__main__':
     KPNetGenerator(Path.home().joinpath("pCloudDrive", "ResearchProjects", "ICCV25"),
-                   expname='MolmoSoftProjShape').main_loop(use_texture=False)
+                   expname='Rebuttal').main_loop(use_texture=False)

@@ -8,7 +8,7 @@ from contextlib import suppress, nullcontext
 from pathlib import Path
 from types import NoneType
 from xml.etree.ElementTree import ParseError
-
+from functools import partialmethod
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -31,14 +31,16 @@ class KPNetGenerator(RenderO3D):
     COLOR_NAMES = OrderedDict(a for a in mcolors.CSS4_COLORS.items() if any(ImageColor.getrgb(a[1])))
     COLOR_MAP = {bytes.fromhex(s.lstrip('#')): v for v, s in enumerate(COLOR_NAMES.values())}
     Multimodal = Molmo
+    KPIO = KPNetIO
+    views_from_model = partialmethod(views_from_model)
 
-    def __init__(self, log_dir: str | os.PathLike = Path(), expname=f'{type(Multimodal).__name__}PTS'):
+    def __init__(self, log_dir: str | os.PathLike = Path(), expname=f'{type(Multimodal).__name__}PTS', res=512):
         self.log_dir = Path(log_dir)
         self.gpt = GPT4o()
         self.molmo = None
-        self.io = KPNetIO(self.log_dir / expname)
+        self.io = self.KPIO(self.log_dir / expname)
         self.dist = 1
-        self.res = 512
+        self.res = res
         self.scale = 2
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.vis = debug_enabled()
@@ -244,7 +246,7 @@ class KPNetGenerator(RenderO3D):
                     continue
 
                 print(f'Rendering class {class_title} mesh {mesh_id}')
-                images, fragments, R, T = views_from_model(self, mesh, self.views, batch_size=batch_size, device=self.device)
+                images, fragments, R, T = self.views_from_model(mesh, self.views, batch_size=batch_size, device=self.device)
                 images = F.interpolate(images, scale_factor=1 / self.scale, mode='bicubic', align_corners=False)
 
                 # Convert to values between 0 and 255

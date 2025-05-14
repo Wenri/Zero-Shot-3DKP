@@ -43,6 +43,18 @@ class RenderO3D(Render):
 
 
 @torch.inference_mode()
+def camera_from_eye_at_up(eye, at, device="cuda"):
+    R, T = look_at_view_transform(eye=eye, at=at, device=device)
+    rotate = torch.tensor([
+        [1, 0, 0],
+        [0, 0, -1],
+        [0, 1, 0]
+    ]).float().to(R.device)
+    R = rotate @ R
+    return FoVPerspectiveCameras(R=R, T=T, device=device)
+
+
+@torch.inference_mode()
 def views_from_model(renderer, mesh, views, sphere_location=None,sphere_radius=0.05,batch_size=None, device="cuda"):
     """
     Compute the features extracted by 'model' from rendered images rendered with 'renderer (deprecated)' for the keypoints
@@ -55,10 +67,13 @@ def views_from_model(renderer, mesh, views, sphere_location=None,sphere_radius=0
     :param device: Device
     :return: torch.Tensor point features (N, emb_dim)
     """
-    with torch.no_grad():
-        mesh = mesh.to(device=device)
-        target = mesh.verts_packed().mean(dim=0, keepdim=True)
-        views = torch.as_tensor(views, dtype=target.dtype, device=target.device) + target
+
+    mesh = mesh.to(device=device)
+    if not isinstance(views, CamerasBase):
+        with torch.no_grad():
+            target = mesh.verts_packed().mean(dim=0, keepdim=True)
+            views = torch.as_tensor(views, dtype=target.dtype, device=target.device) + target
+        views = camera_from_eye_at_up(views, target, device=device)
 
     num_views = len(views)
     if batch_size is None:
@@ -85,17 +100,10 @@ def views_from_model(renderer, mesh, views, sphere_location=None,sphere_radius=0
     all_fragments = defaultdict(list)
 
     with torch.no_grad():
-        R, T = look_at_view_transform(eye=views, at=target, device=device)
-        rotate = torch.tensor([
-            [1, 0, 0],
-            [0, 0, -1],
-            [0, 1, 0]
-        ]).float().to(R.device)
-        R = rotate @ R
         # 1. Render the mesh
         for s in gen_batches(num_views, batch_size):
-            cameras = FoVPerspectiveCameras(R=R[s], T=T[s], device=device)
-            lights = PointLights(ambient_color=((0.5, 0.5, 0.5),), location=views[s], device=device)
+            cameras = views[torch.as_tensor(range(s.start, s.stop))]
+            lights = PointLights(ambient_color=((0.5, 0.5, 0.5),), location=cameras.get_camera_center(), device=device)
 
             batch_images, fragments = renderer(mesh.extend(len(cameras)), cameras=cameras, lights=lights)
             all_images.append(batch_images)
@@ -103,7 +111,7 @@ def views_from_model(renderer, mesh, views, sphere_location=None,sphere_radius=0
                 all_fragments[k].append(v)
 
         all_fragments = type(fragments)(**{k: torch.cat(v) for k, v in all_fragments.items()})
-        return rearrange(torch.cat(all_images), 'b h w c -> b c h w'), all_fragments, R, T
+        return rearrange(torch.cat(all_images), 'b h w c -> b c h w'), all_fragments, cameras.R, cameras.T
 
 
 def get_depth_point_cloud(

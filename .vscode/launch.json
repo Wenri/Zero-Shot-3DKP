@@ -24,7 +24,7 @@
             "env": {
                 "CUDA_VISIBLE_DEVICES": "1",
                 "KEYPOINT_DATASET_PATH": "/data/bingchen/KeypointNet",
-                "COLMAP_DATA_PATH": "/data/bingchen/nerf/tandt/Barn/radial",
+                "COLMAP_DATA_PATH": "/data/bingchen/nerf/tandt/Barn/simple_pinhole",
             }
         },
         {

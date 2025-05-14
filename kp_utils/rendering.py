@@ -9,7 +9,7 @@ from scipy.spatial.transform import Rotation as R
 from .geometry import find_adjacent_faces
 
 
-def setup_renderer(device, res=224, faces_per_pixel=5, bin_size=0, cull_backfaces=True):
+def setup_renderer(device, res=224, faces_per_pixel=1, bin_size=None, cull_backfaces=True):
     """
     Setup a standard PyTorch3D renderer for rendering meshes.
     """
@@ -18,7 +18,7 @@ def setup_renderer(device, res=224, faces_per_pixel=5, bin_size=0, cull_backface
     cameras = FoVPerspectiveCameras(R=R, T=T, device=device)
     raster_settings = RasterizationSettings(
         image_size=res,
-        # max_faces_per_bin=5,
+        max_faces_per_bin=None,
         faces_per_pixel=faces_per_pixel,
         bin_size=bin_size,
         cull_backfaces=cull_backfaces

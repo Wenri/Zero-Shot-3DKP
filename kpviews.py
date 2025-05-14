@@ -47,7 +47,9 @@ class KPNetGenerator(RenderO3D):
         self.views = sample_view_points(self.dist, partition=3)
         self.proj_radius = 15
         self.kp_initialized_empty = True
-        super(KPNetGenerator, self).__init__(self.device, res=self.scale * self.res)
+        hires = np.asarray(self.res)
+        hires *= self.scale
+        super(KPNetGenerator, self).__init__(self.device, res=hires.tolist())
 
     @torch.inference_mode()
     def get_kp_names(self, tensor_images):

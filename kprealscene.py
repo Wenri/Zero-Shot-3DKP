@@ -4,7 +4,7 @@ import numpy as np
 from pytorch3d.renderer import FoVPerspectiveCameras
 from pytorch3d.structures import Pointclouds
 import torch
-from data_creation.scene.cameras import colmap_to_pytorch3d
+from data_creation.scene.cameras import colmap_to_pytorch3d, convert_camera_from_gs_to_pytorch3d
 from kp_utils.data.utils import load_mesh
 from kpeval import KPNetIO
 from kpviews import KPNetGenerator
@@ -40,19 +40,21 @@ class RealSceneGenerator(KPNetGenerator):
     KPIO = RealSceneIO
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, res=540, **kwargs)
+        super().__init__(*args, res=(540, 960), **kwargs)
         scene_info = self.io.scene_info
         self.views = scene_info.train_cameras + scene_info.test_cameras
+        self.views = self.views[:1]
         self.vis = True
 
     def views_from_model(self, mesh, views, batch_size=None, device="cuda"):
-        R, T = zip(*[colmap_to_pytorch3d(
-            rotation=torch.from_numpy(view.R).to(device=device),
-            translation=torch.from_numpy(view.T).unsqueeze_(-1).to(device=device),
-            device=device) for view in self.views])
-        FoV = [view.FovY for view in self.views]
+        # R, T = zip(*[colmap_to_pytorch3d(
+        #     rotation=torch.from_numpy(view.R).to(device=device),
+        #     translation=torch.from_numpy(view.T).unsqueeze_(-1).to(device=device),
+        #     device=device) for view in self.views])
+        # FoV = [view.FovY for view in self.views]
 
-        cameras = FoVPerspectiveCameras(R=torch.stack(R), T=torch.stack(T), fov=FoV, degrees=False, device=device)
+        # cameras = FoVPerspectiveCameras(R=torch.stack(R), T=torch.stack(T), fov=FoV, degrees=False, device=device)
+        cameras = convert_camera_from_gs_to_pytorch3d(self.views)
         ret = super().views_from_model(mesh, cameras, batch_size=batch_size, device=device)
         return ret
 

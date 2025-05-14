@@ -21,11 +21,13 @@ from pytorch3d.utils import ico_sphere
 
 
 class RenderO3D(Render):
+    setup_renderer = staticmethod(setup_renderer)
+
     def __init__(self, *args, res=512, **kwargs):
         """
         Setup a standard PyTorch3D renderer for rendering meshes.
         """
-        self.o3d = setup_renderer(*args, res=res, **kwargs)
+        self.o3d = self.setup_renderer(*args, res=res, **kwargs)
         super(RenderO3D, self).__init__(size=res, camera_poses=None)
 
     def __call__(self, meshes_world, cameras, **kwargs):

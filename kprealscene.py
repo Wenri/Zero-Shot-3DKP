@@ -32,7 +32,7 @@ class RealSceneIO(KPNetIO):
         yield mesh, keypoints, 'colmap', mesh_id, pcd
 
     def get_kp_names_from_lable(self, class_title, mesh_id, keypoints):
-        return keypoints
+        return {kp: (idx,) for idx, kp in enumerate(keypoints)}
 
 
 
@@ -40,10 +40,10 @@ class RealSceneGenerator(KPNetGenerator):
     KPIO = RealSceneIO
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, res=(540, 960), **kwargs)
+        super().__init__(*args, res=(668, 1200), scale=1.25, **kwargs)
         scene_info = self.io.scene_info
         self.views = scene_info.train_cameras + scene_info.test_cameras
-        self.views = self.views[:1]
+        self.views = self.views[:3]
         self.vis = True
 
     def views_from_model(self, mesh, views, batch_size=None, device="cuda"):
@@ -55,8 +55,9 @@ class RealSceneGenerator(KPNetGenerator):
 
         # cameras = FoVPerspectiveCameras(R=torch.stack(R), T=torch.stack(T), fov=FoV, degrees=False, device=device)
         cameras = convert_camera_from_gs_to_pytorch3d(self.views)
-        ret = super().views_from_model(mesh, cameras, batch_size=batch_size, device=device)
-        return ret
+        images, fragments, R, T = super().views_from_model(mesh, cameras, batch_size=batch_size, device=device)
+        images_raw = torch.stack([torch.from_numpy(np.asanyarray(v.image.convert("RGBA"))).permute(2, 0, 1) for v in self.views])
+        return images_raw, fragments, R, T
 
 
 if __name__ == '__main__':

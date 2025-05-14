@@ -34,21 +34,20 @@ class KPNetGenerator(RenderO3D):
     KPIO = KPNetIO
     views_from_model = partialmethod(views_from_model)
 
-    def __init__(self, log_dir: str | os.PathLike = Path(), expname=f'{type(Multimodal).__name__}PTS', res=512):
+    def __init__(self, log_dir: str | os.PathLike = Path(), expname=f'{type(Multimodal).__name__}PTS', res=512, scale=2):
         self.log_dir = Path(log_dir)
         self.gpt = GPT4o()
         self.molmo = None
         self.io = self.KPIO(self.log_dir / expname)
         self.dist = 1
         self.res = res
-        self.scale = 2
+        self.scale = scale
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.vis = debug_enabled()
         self.views = sample_view_points(self.dist, partition=3)
         self.proj_radius = 15
         self.kp_initialized_empty = True
-        hires = np.asarray(self.res)
-        hires *= self.scale
+        hires = (np.asarray(self.res) * self.scale).astype(np.int64)
         super(KPNetGenerator, self).__init__(self.device, res=hires.tolist())
 
     @torch.inference_mode()

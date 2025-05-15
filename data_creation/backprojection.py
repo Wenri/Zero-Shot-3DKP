@@ -113,7 +113,8 @@ def views_from_model(renderer, mesh, views, sphere_location=None,sphere_radius=0
                 all_fragments[k].append(v)
 
         all_fragments = type(fragments)(**{k: torch.cat(v) for k, v in all_fragments.items()})
-        return rearrange(torch.cat(all_images), 'b h w c -> b c h w'), all_fragments, cameras.R, cameras.T
+        all_lights = type(lights)(ambient_color=lights.ambient_color, location=views.get_camera_center(), device=device)
+        return rearrange(torch.cat(all_images), 'b h w c -> b c h w'), all_fragments, views, all_lights
 
 
 def get_depth_point_cloud(

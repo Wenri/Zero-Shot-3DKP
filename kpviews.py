@@ -92,9 +92,8 @@ class KPNetGenerator(RenderO3D):
         return all_kps, all_vis
 
     @torch.inference_mode()
-    def backproject_kps(self, mesh, fragments, R, T, kps):
-        cameras = FoVPerspectiveCameras(R=R, T=T, device=self.device)
-        depth = fragments.zbuf[..., 0] # N H W
+    def backproject_kps(self, mesh, fragments, cameras, T, kps):
+        depth = fragments.zbuf[..., 0]  # N H W
         batch_size, imh, imw = depth.shape
         color = torch.zeros((batch_size, 3, imh, imw), dtype=torch.uint8, device=self.device)
 

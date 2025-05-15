@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import random
 import numpy as np
 from pytorch3d.renderer import FoVPerspectiveCameras
 from pytorch3d.structures import Pointclouds
@@ -28,11 +29,11 @@ class RealSceneIO(KPNetIO):
         pcd = Pointclouds(points=torch.from_numpy(pcd.points[np.newaxis]),
                           normals=torch.from_numpy(pcd.normals[np.newaxis]),
                           features=torch.from_numpy(pcd.colors[np.newaxis]))
-        keypoints = ['testing']
+        keypoints = ['window', 'door', 'table']
         yield mesh, keypoints, 'colmap', mesh_id, pcd
 
     def get_kp_names_from_lable(self, class_title, mesh_id, keypoints):
-        return {kp: (idx,) for idx, kp in enumerate(keypoints)}
+        return {idx: kp for idx, kp in enumerate(keypoints)}
 
 
 
@@ -43,6 +44,7 @@ class RealSceneGenerator(KPNetGenerator):
         super().__init__(*args, res=(668, 1200), scale=1.25, **kwargs)
         scene_info = self.io.scene_info
         self.views = scene_info.train_cameras + scene_info.test_cameras
+        # random.shuffle(self.views)
         self.views = self.views[:3]
         self.vis = True
 
@@ -57,8 +59,11 @@ class RealSceneGenerator(KPNetGenerator):
         cameras = convert_camera_from_gs_to_pytorch3d(self.views)
         images, fragments, R, T = super().views_from_model(mesh, cameras, batch_size=batch_size, device=device)
         images_raw = torch.stack([torch.from_numpy(np.asanyarray(v.image.convert("RGBA"))).permute(2, 0, 1) for v in self.views])
+        images_raw = images_raw.to(device=device) / 255.
         return images_raw, fragments, R, T
-
+    
+    def process_kp_list(self, mesh, fragments, R, T, images, kp_list, class_title, mesh_id, prompt_idx=slice(None)):
+        return super().process_kp_list(mesh, fragments, R, T, images, kp_list, class_title, mesh_id, prompt_idx=prompt_idx)
 
 if __name__ == '__main__':
     RealSceneGenerator(Path.home().joinpath("pCloudDrive", "ResearchProjects", "ICCV25"),

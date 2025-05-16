@@ -24,7 +24,19 @@
             "env": {
                 "CUDA_VISIBLE_DEVICES": "1",
                 "KEYPOINT_DATASET_PATH": "/data/bingchen/KeypointNet",
-                "COLMAP_DATA_PATH": "/data/bingchen/nerf/TNT/TrainingSet/Barn",
+                "COLMAP_DATA_PATH": "/data/bingchen/nerf/ZeroKeyRealScene/bonsai",
+            }
+        },
+        {
+            "name": "Debug KPHuman3M",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "kphuman3m.py",
+            "console": "integratedTerminal",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+                "KEYPOINT_DATASET_PATH": "/data/bingchen/KeypointNet",
+                "HUMAN3M_DATA_PATH": "/home/wenri/pCloudDrive/AIResearch/Human3.6M/Scans/S1",
             }
         },
         {

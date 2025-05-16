@@ -18,14 +18,16 @@ PCDS_PATH = os.path.join(KEYPOINTNET_DATASET_PATH, os.environ.get("KEYPOINT_DATA
 KEYPOINTS_PATH = os.path.join(KEYPOINTNET_DATASET_PATH, "annotations")
 
 
-def load_mesh(class_id, mesh_id, use_texture=True, use_normals=False):
+def load_mesh(class_id, mesh_id, use_texture=True, use_normals=False, mesh_type='.ply'):
     """
     Loads the mesh with the given ID.
     """
-    mesh = io.load_mesh(os.path.join(MESHES_PATH, class_id, mesh_id + ".ply"), include_textures=use_texture)
+    mesh = io.load_mesh(os.path.join(MESHES_PATH, class_id, mesh_id + mesh_type), include_textures=use_texture)
     if not use_texture:
         points = mesh.verts_packed()  # Shape: (N, 3)
         if use_normals:
+            verts_features = mesh.verts_normals_list()
+        elif False:
             # Min-max normalize the points to be in range [0, 1]
             min_coords = points.min(dim=0).values
             max_coords = points.max(dim=0).values

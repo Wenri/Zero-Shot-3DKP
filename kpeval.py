@@ -59,7 +59,7 @@ class KPNetIO(IO):
     def loop_over_test_datasets(use_texture):
         test_datasets = (
             KeypointNetDataset(filter_classes=[cat_name], use_texture=use_texture) for cat_name in
-            ['airplane', 'chair', 'table']  # CLASS_MAPPING.values()
+            CLASS_MAPPING.values()
         )
         for batch in zip_longest(*test_datasets):
             yield from filter(None, batch)
@@ -72,7 +72,7 @@ class KPNetIO(IO):
         all_semantic_ids = setids_to_uint8_flags(kp_list.keys())
         semantic_id='0x{:02X}{:02X}{:02X}'.format(*all_semantic_ids.tolist())
         return mesh_file.with_stem(f"{mesh_id}_{semantic_id}_keypts").exists()
-    
+
     def check_if_complete2(self, kp_list, class_title, mesh_id):
         save_dir = self.output_dir / class_title
         mesh_file = save_dir / f"{mesh_id}_mesh.ply"
@@ -100,20 +100,20 @@ class KPNetIO(IO):
                    self.load_pointcloud(fname).points_packed()
                    for fname in save_dir.glob(f"{prefix or mesh_id}_0x*_{postfix}.ply")}
         return all_kps
-    
+
     def load_kps2(self, class_title, mesh_id, postfix='keypts'):
         save_dir = self.output_dir / class_title
         kps = {fname.stem.split('_')[1]: self.load_pointcloud(fname).points_packed()
                for fname in save_dir.glob(f"{mesh_id}_*_{postfix}.ply")}
         return kps
-    
+
     def load_kps_with_semantic_ids(self, class_title, mesh_id, postfix='keypts',prefix=None):
         save_dir = self.output_dir / class_title / mesh_id
-        all_kps = {frozenset(map(int, fname.stem.split('_')[1].split(','))): 
+        all_kps = {frozenset(map(int, fname.stem.split('_')[1].split(','))):
                    self.load_pointcloud(fname).points_packed()
                    for fname in save_dir.glob(f"{prefix or mesh_id}_*_{postfix}.ply")}
         return all_kps
-    
+
     def save_kps_with_semantic_ids(self, mesh, all_kps, class_title, mesh_id, postfix='keypts', prefix=None):
         save_dir = self.output_dir / class_title / mesh_id
         save_dir.mkdir(parents=True, exist_ok=True)

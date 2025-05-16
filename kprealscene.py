@@ -29,7 +29,7 @@ class RealSceneIO(KPNetIO):
         pcd = Pointclouds(points=torch.from_numpy(pcd.points[np.newaxis]),
                           normals=torch.from_numpy(pcd.normals[np.newaxis]),
                           features=torch.from_numpy(pcd.colors[np.newaxis]))
-        keypoints = ['window', 'door', 'table']
+        keypoints = ['plant container', 'table corner']
         yield mesh, keypoints, 'colmap', mesh_id, pcd
 
     def get_kp_names_from_lable(self, class_title, mesh_id, keypoints):
@@ -45,7 +45,7 @@ class RealSceneGenerator(KPNetGenerator):
         scene_info = self.io.scene_info
         self.views = scene_info.train_cameras + scene_info.test_cameras
         # random.shuffle(self.views)
-        self.views = self.views[:3]
+        self.views = self.views[0:-1:16]
         self.vis = True
 
     def views_from_model(self, mesh, views, batch_size=None, device="cuda"):
@@ -61,7 +61,7 @@ class RealSceneGenerator(KPNetGenerator):
         images_raw = torch.stack([torch.from_numpy(np.asanyarray(v.image.convert("RGBA"))).permute(2, 0, 1) for v in self.views])
         images_raw = images_raw.to(device=device) / 255.
         return images_raw, fragments, R, T
-    
+
     def process_kp_list(self, mesh, fragments, R, T, images, kp_list, class_title, mesh_id, prompt_idx=slice(None)):
         return super().process_kp_list(mesh, fragments, R, T, images, kp_list, class_title, mesh_id, prompt_idx=prompt_idx)
 
